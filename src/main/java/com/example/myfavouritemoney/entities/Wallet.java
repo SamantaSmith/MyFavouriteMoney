@@ -56,5 +56,4 @@ public class Wallet {
         return money;
     }
 
-
 }

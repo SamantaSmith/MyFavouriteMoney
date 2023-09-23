@@ -2,16 +2,20 @@ package com.example.myfavouritemoney.controller;
 
 import com.example.myfavouritemoney.dto.CreateWalletRequestDTO;
 import com.example.myfavouritemoney.dto.UpdateWalletRequestDTO;
+import com.example.myfavouritemoney.dto.WalletDTO;
 import com.example.myfavouritemoney.entities.Wallet;
 import com.example.myfavouritemoney.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Currency;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "wallet")
-public class WalletContoller {
+public class WalletController {
 
     @Autowired
     private WalletService service;
@@ -35,10 +39,11 @@ public class WalletContoller {
     }
 
     @GetMapping(path = "/getByUserId")
-    public List<Wallet> getWallets() {
-        return service.getWallets(1L);
+    public List<WalletDTO> getWallets() {
+        return service.getWallets(1L)
+                .stream().map(e -> new WalletDTO(e.getName(), service.getWalletTypeVarchar(e.getType()), e.getMoney() + " ₽"))
+                .collect(Collectors.toList());
     }
-
 
 
     public Wallet map(CreateWalletRequestDTO dto, Long userId) {
