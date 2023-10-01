@@ -41,7 +41,7 @@ public class WalletController {
     @GetMapping(path = "/getByUserId")
     public List<WalletDTO> getWallets() {
         return service.getWallets(1L)
-                .stream().map(e -> new WalletDTO(e.getName(), service.getWalletTypeVarchar(e.getType()), e.getMoney() + " ₽"))
+                .stream().map(e -> new WalletDTO(e.getName(), service.getWalletTypeVarchar(e.getType()), e.getMoney()))
                 .collect(Collectors.toList());
     }
 
