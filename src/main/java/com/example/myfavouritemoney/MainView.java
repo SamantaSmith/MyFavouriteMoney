@@ -4,24 +4,22 @@ import com.example.myfavouritemoney.controller.MoneyOperationController;
 import com.example.myfavouritemoney.controller.WalletController;
 import com.example.myfavouritemoney.dto.MoneyOperationDTO;
 import com.example.myfavouritemoney.dto.WalletDTO;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
-import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Route(value = "")
 @Component
+@PreserveOnRefresh
 public class MainView extends VerticalLayout {
 
     private WalletController walletController;
@@ -41,7 +39,7 @@ public class MainView extends VerticalLayout {
         Grid<WalletDTO> walletGrid = new Grid<>(WalletDTO.class, false);
         walletGrid.addColumn(WalletDTO::getName).setHeader("Имя кошелька");
         walletGrid.addColumn(WalletDTO::getType).setHeader("Тип");
-        walletGrid.addColumn(WalletDTO::getMoney).setHeader("Сумма").setFooter(String.valueOf(sum) + "₽");
+        walletGrid.addColumn(WalletDTO::getMoney).setHeader("Сумма").setFooter(sum + "₽");
         walletGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
         walletGrid.setItems(wallets);
@@ -74,7 +72,7 @@ public class MainView extends VerticalLayout {
 
     private static Renderer<MoneyOperationDTO> createEmployeeRenderer() {
         return LitRenderer.<MoneyOperationDTO> of(
-                        "<input type=\"checkbox\" ${item.checked}>")
-                .withProperty("checked", MoneyOperationDTO::getChecked);
+                        "<vaadin-checkbox ?checked=\"${item.checked}\"></vaadin-checkbox>")
+                .withProperty("checked", MoneyOperationDTO::getCompleted);
     }
 }

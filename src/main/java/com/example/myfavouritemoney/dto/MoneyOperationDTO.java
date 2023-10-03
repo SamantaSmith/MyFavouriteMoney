@@ -28,11 +28,7 @@ public class MoneyOperationDTO {
         return money;
     }
 
-    public Boolean getCompleted() {
-        return completed;
-    }
-
-    public String getChecked() {
-        return this.completed ? "checked" : "";
+    public String getCompleted() {
+        return completed ? "checked" : "";
     }
 }
