@@ -70,9 +70,12 @@ public class MainView extends VerticalLayout {
         );
     }
 
-    private static Renderer<MoneyOperationDTO> createEmployeeRenderer() {
+    private Renderer<MoneyOperationDTO> createEmployeeRenderer() {
         return LitRenderer.<MoneyOperationDTO> of(
-                        "<vaadin-checkbox ?checked=\"${item.checked}\"></vaadin-checkbox>")
-                .withProperty("checked", MoneyOperationDTO::getCompleted);
+                        "<vaadin-checkbox @click=\"${handleCheckClick}\" ?checked=\"${item.checked}\"></vaadin-checkbox>")
+                .withProperty("checked", MoneyOperationDTO::getCompleted)
+                .withFunction("handleCheckClick", (item) -> {
+                    moneyOperationController.updateChecked(item.getId());
+                });
     }
 }

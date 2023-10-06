@@ -31,6 +31,10 @@ public class MoneyOperationController {
         return service.getExpenses();
     }
 
+    public void updateChecked(Long id) {
+        service.updateChecked(id);
+    }
+
 
     //public MoneyOperation map(CreateMoneyOperationRequestDTO dto, Long userId) {
     //    return new MoneyOperation(userId, dto.walletId(), dto.monthRegularity(), dto.income(), dto.standardDayOfIncomeInMonth());

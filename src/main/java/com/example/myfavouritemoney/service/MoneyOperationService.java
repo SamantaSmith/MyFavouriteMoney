@@ -28,8 +28,12 @@ public class MoneyOperationService {
 
         List<MoneyOperationDTO> list = new ArrayList<>();
         repository.findByUserId(1L).stream().filter(e -> e.getOperationType().equals("EXPENSE")).forEach(e -> {
-            singleOperationRepository.findExpenses(e.getId()).forEach(f -> list.add(new MoneyOperationDTO(f.getDate(), f.getCategory(), f.getAmountOfMoney(), f.getCompleted())));
+            singleOperationRepository.findExpenses(e.getId()).forEach(f -> list.add(new MoneyOperationDTO(f.getId(), f.getDate(), f.getCategory(), f.getAmountOfMoney(), f.getCompleted())));
         });
         return list;
+    }
+
+    public void updateChecked (Long id) {
+        singleOperationRepository.updateChecked(id);
     }
 }
