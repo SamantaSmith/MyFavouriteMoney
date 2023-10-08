@@ -12,8 +12,12 @@ import java.util.List;
 @Repository
 public interface SingleOperationRepository extends JpaRepository<SingleOperation, Long> {
 
-    @Query("SELECT t FROM SingleOperation t WHERE t.baseOperationId = ?1")
-    List<SingleOperation> findExpenses(Long baseOperationId);
+    @Query("SELECT so FROM SingleOperation so\n" +
+            "    inner join MoneyOperation m on so.baseOperationId=m.id\n" +
+            "    where m.actual=true\n" +
+            "    and m.operationType='EXPENSE'\n" +
+            "    and to_char(so.date, 'YYYY-MM') = CONCAT(?1, '-', ?2)")
+    List<SingleOperation> findExpenses(String year, String month);
 
     @Modifying
     @Transactional

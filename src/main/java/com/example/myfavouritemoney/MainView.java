@@ -16,6 +16,9 @@ import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import java.time.LocalDateTime;
+import java.time.format.TextStyle;
+import java.util.Locale;
 
 @Route(value = "")
 @Component
@@ -47,7 +50,7 @@ public class MainView extends VerticalLayout {
 
 
         VerticalLayout expensesList = new VerticalLayout();
-        expensesList.add(new H3("Мои расходы:"));
+        expensesList.add(new H3(String.format("Мои расходы за %s:", LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")))));
 
         Grid<MoneyOperationDTO> moneyOperationDTOGrid = new Grid<>(MoneyOperationDTO.class, false);
 
@@ -55,7 +58,7 @@ public class MainView extends VerticalLayout {
         moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
         moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getCategory).setHeader("Категория");
         moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getMoney).setHeader("Расход");
-        moneyOperationDTOGrid.setItems(moneyOperationController.getExpenses());
+        moneyOperationDTOGrid.setItems(moneyOperationController.getExpenses(LocalDateTime.now().getYear(), LocalDateTime.now().getMonth().getValue()));
         moneyOperationDTOGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         expensesList.add(moneyOperationDTOGrid);
 

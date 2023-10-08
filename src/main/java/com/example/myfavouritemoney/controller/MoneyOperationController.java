@@ -1,15 +1,11 @@
 package com.example.myfavouritemoney.controller;
 
-import com.example.myfavouritemoney.dto.CreateMoneyOperationRequestDTO;
 import com.example.myfavouritemoney.dto.MoneyOperationDTO;
-import com.example.myfavouritemoney.dto.WalletDTO;
-import com.example.myfavouritemoney.entities.MoneyOperation;
 import com.example.myfavouritemoney.service.MoneyOperationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "moneyOperation")
@@ -27,8 +23,8 @@ public class MoneyOperationController {
     //}
 
     @GetMapping(path = "/getExpenses")
-    public List<MoneyOperationDTO> getExpenses() {
-        return service.getExpenses();
+    public List<MoneyOperationDTO> getExpenses(int year, int month) {
+        return service.getExpensesByMonth(year, month);
     }
 
     public void updateChecked(Long id) {

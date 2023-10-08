@@ -24,13 +24,13 @@ public class MoneyOperationService {
         repository.save(income);
     }
 
-    public List<MoneyOperationDTO> getExpenses() {
+    public List<MoneyOperationDTO> getExpensesByMonth(int year, int month) {
 
-        List<MoneyOperationDTO> list = new ArrayList<>();
-        repository.findByUserId(1L).stream().filter(e -> e.getOperationType().equals("EXPENSE")).forEach(e -> {
-            singleOperationRepository.findExpenses(e.getId()).forEach(f -> list.add(new MoneyOperationDTO(f.getId(), f.getDate(), f.getCategory(), f.getAmountOfMoney(), f.getCompleted())));
-        });
-        return list;
+        return singleOperationRepository
+                .findExpenses(String.valueOf(year), month >= 10 ? String.valueOf(month) : '0' + String.valueOf(month))
+                .stream()
+                .map(e -> new MoneyOperationDTO(e.getId(), e.getDate(), e.getCategory(), e.getAmountOfMoney(), e.getCompleted()))
+                .collect(Collectors.toList());
     }
 
     public void updateChecked (Long id) {
