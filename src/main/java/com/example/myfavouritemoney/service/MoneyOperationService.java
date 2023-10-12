@@ -38,7 +38,7 @@ public class MoneyOperationService {
         singleOperationRepository.updateChecked(id);
     }
 
-    class MoneyOperationDTOExpenseComparator implements Comparator<MoneyOperationDTO> {
+    static class MoneyOperationDTOExpenseComparator implements Comparator<MoneyOperationDTO> {
         @Override
         public int compare(MoneyOperationDTO o1, MoneyOperationDTO o2) {
             return o1.getCompletedBoolean().compareTo(o2.getCompletedBoolean()) != 0
