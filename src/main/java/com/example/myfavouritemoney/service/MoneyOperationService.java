@@ -7,7 +7,7 @@ import com.example.myfavouritemoney.repository.SingleOperationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,10 +30,20 @@ public class MoneyOperationService {
                 .findExpenses(String.valueOf(year), month >= 10 ? String.valueOf(month) : '0' + String.valueOf(month))
                 .stream()
                 .map(e -> new MoneyOperationDTO(e.getId(), e.getDate(), e.getCategory(), e.getAmountOfMoney(), e.getCompleted()))
+                .sorted(new MoneyOperationDTOExpenseComparator())
                 .collect(Collectors.toList());
     }
 
     public void updateChecked (Long id) {
         singleOperationRepository.updateChecked(id);
+    }
+
+    class MoneyOperationDTOExpenseComparator implements Comparator<MoneyOperationDTO> {
+        @Override
+        public int compare(MoneyOperationDTO o1, MoneyOperationDTO o2) {
+            return o1.getCompletedBoolean().compareTo(o2.getCompletedBoolean()) != 0
+                    ? o1.getCompletedBoolean().compareTo(o2.getCompletedBoolean())
+                    : o1.getDate().compareTo(o2.getDate());
+        }
     }
 }
