@@ -6,6 +6,7 @@ import com.example.myfavouritemoney.dto.MoneyOperationDTO;
 import com.example.myfavouritemoney.dto.WalletDTO;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -25,7 +26,6 @@ import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.TextStyle;
 import java.util.*;
@@ -62,25 +62,16 @@ public class MainView extends VerticalLayout {
         //Расходы за месяц
 
         var h3 = new H3
-                (String.format("Мои расходы за %s:",
+                (String.format("Мои расходы за %s: (клик для смены месяца)",
                         LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))));
-        h3.addClickListener(new ComponentEventListener<ClickEvent<H3>>() {
-            @Override
-            public void onComponentEvent(ClickEvent<H3> h3ClickEvent) {
-                Dialog dialog = new Dialog();
-                dialog.setHeaderTitle("Выбор месяца");
 
-
-
-            }
-        });
 
         VerticalLayout expensesList = new VerticalLayout();
         expensesList.add(h3);
 
         Grid<MoneyOperationDTO> moneyOperationDTOGrid = new Grid<>(MoneyOperationDTO.class, false);
 
-        moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid)).setHeader("Выполнено");
+        moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid, 0)).setHeader("Выполнено");
         moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
         moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getCategory).setHeader("Категория");
         moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getMoney).setHeader("Расход");
@@ -88,6 +79,53 @@ public class MainView extends VerticalLayout {
         moneyOperationDTOGrid.setItems(moneyOperationController.getExpenses(LocalDateTime.now().getYear(), LocalDateTime.now().getMonth().getValue()));
         moneyOperationDTOGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         expensesList.add(moneyOperationDTOGrid);
+
+        h3.addClickListener((ComponentEventListener<ClickEvent<H3>>) h3ClickEvent -> {
+
+            Dialog dialog = new Dialog();
+            dialog.setHeaderTitle("Выбор месяца");
+
+            Button previousMonthButton = new Button(LocalDateTime.now().minusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
+                h3.setText(String.format("Мои расходы за %s:",
+                        LocalDateTime.now().minusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))));
+                moneyOperationDTOGrid.removeAllColumns();
+                moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid, -1)).setHeader("Выполнено");
+                moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
+                moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getCategory).setHeader("Категория");
+                moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getMoney).setHeader("Расход");
+                moneyOperationDTOGrid.setItems(moneyOperationController.getExpenses(LocalDateTime.now().minusMonths(1).getYear(), LocalDateTime.now().minusMonths(1).getMonth().getValue()));
+                dialog.close();
+            });
+            Button currentMonthButton = new Button(LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
+                h3.setText(String.format("Мои расходы за %s:",
+                        LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))));
+                moneyOperationDTOGrid.removeAllColumns();
+                moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid, 0)).setHeader("Выполнено");
+                moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
+                moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getCategory).setHeader("Категория");
+                moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getMoney).setHeader("Расход");
+                moneyOperationDTOGrid.setItems(moneyOperationController.getExpenses(LocalDateTime.now().getYear(), LocalDateTime.now().getMonth().getValue()));
+                dialog.close();
+            });
+            Button upComingMonthButton = new Button(LocalDateTime.now().plusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
+                h3.setText(String.format("Мои расходы за %s:",
+                        LocalDateTime.now().plusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))));
+                moneyOperationDTOGrid.removeAllColumns();
+                moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid, 1)).setHeader("Выполнено");
+                moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
+                moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getCategory).setHeader("Категория");
+                moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getMoney).setHeader("Расход");
+                moneyOperationDTOGrid.setItems(moneyOperationController.getExpenses(LocalDateTime.now().plusMonths(1).getYear(), LocalDateTime.now().plusMonths(1).getMonth().getValue()));
+                dialog.close();
+            });
+
+            dialog.getFooter().add(previousMonthButton);
+            dialog.getFooter().add(currentMonthButton);
+            dialog.getFooter().add(upComingMonthButton);
+            dialog.open();
+        });
+
+
 
         //Общее
 
@@ -101,7 +139,7 @@ public class MainView extends VerticalLayout {
         );
     }
 
-    private Renderer<MoneyOperationDTO> createEmployeeRenderer(Grid<MoneyOperationDTO> grid) {
+    private Renderer<MoneyOperationDTO> createEmployeeRenderer(Grid<MoneyOperationDTO> grid, int plusMonth) {
         return LitRenderer.<MoneyOperationDTO> of(
                         "<vaadin-checkbox @click=\"${handleCheckClick}\" ?checked=\"${item.checked}\"></vaadin-checkbox>")
                 .withProperty("checked", MoneyOperationDTO::getCompleted)
@@ -119,11 +157,11 @@ public class MainView extends VerticalLayout {
                         moneyOperationController.updateChecked(item.getId());
 
                         grid.removeAllColumns();
-                        grid.addColumn(createEmployeeRenderer(grid)).setHeader("Выполнено");
+                        grid.addColumn(createEmployeeRenderer(grid, plusMonth)).setHeader("Выполнено");
                         grid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
                         grid.addColumn(MoneyOperationDTO::getCategory).setHeader("Категория");
                         grid.addColumn(MoneyOperationDTO::getMoney).setHeader("Расход");
-                        grid.setItems(moneyOperationController.getExpenses(LocalDateTime.now().getYear(), LocalDateTime.now().getMonth().getValue()));
+                        grid.setItems(moneyOperationController.getExpenses(LocalDateTime.now().getYear(), LocalDateTime.now().plusMonths(plusMonth).getMonth().getValue()));
                     });
                     dialog.open();
                 });
