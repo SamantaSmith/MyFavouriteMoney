@@ -2,13 +2,15 @@ package com.example.myfavouritemoney.entities;
 
 import jakarta.persistence.*;
 
+import java.util.UUID;
+
 @Entity
 @Table(name= "money_operation")
 public class MoneyOperation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     @Column(name="user_id")
     private Long userId;
     @Column(name="operation_type")
@@ -31,7 +33,7 @@ public class MoneyOperation {
         this.actual = actual;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 

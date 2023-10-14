@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "moneyOperation")
@@ -27,7 +28,7 @@ public class MoneyOperationController {
         return service.getExpensesByMonth(year, month);
     }
 
-    public void updateChecked(Long id) {
+    public void updateChecked(UUID id) {
         service.updateChecked(id);
     }
 

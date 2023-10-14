@@ -3,16 +3,17 @@ package com.example.myfavouritemoney.entities;
 import jakarta.persistence.*;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(name = "single_operation")
 public class SingleOperation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     @Column(name="base_operation_id")
-    private Long baseOperationId;
+    private UUID baseOperationId;
     @Column(name="wallet_id")
     private Long walletId;
     @Column(name="amount_of_money")
@@ -27,7 +28,7 @@ public class SingleOperation {
     public SingleOperation() {
     }
 
-    public SingleOperation(Long walletId, Long baseOperationId, Float amountOfMoney, Date date, Boolean completed, String category) {
+    public SingleOperation(Long walletId, UUID baseOperationId, Float amountOfMoney, Date date, Boolean completed, String category) {
         this.walletId = walletId;
         this.baseOperationId = baseOperationId;
         this.amountOfMoney = amountOfMoney;
@@ -36,11 +37,11 @@ public class SingleOperation {
         this.category = category;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public Long getBaseOperationId() {
+    public UUID getBaseOperationId() {
         return baseOperationId;
     }
 

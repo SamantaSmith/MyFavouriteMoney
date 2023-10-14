@@ -1,16 +1,17 @@
 package com.example.myfavouritemoney.dto;
 
 import java.util.Date;
+import java.util.UUID;
 
 public class MoneyOperationDTO {
 
-    private Long id;
+    private UUID id;
     private Date date;
     private String category;
     private Float money;
     private Boolean completed;
 
-    public MoneyOperationDTO(Long id, Date date, String category, Float money, Boolean completed) {
+    public MoneyOperationDTO(UUID id, Date date, String category, Float money, Boolean completed) {
         this.id = id;
         this.date = date;
         this.category = category;
@@ -18,7 +19,7 @@ public class MoneyOperationDTO {
         this.completed = completed;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 

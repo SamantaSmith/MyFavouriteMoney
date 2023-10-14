@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface SingleOperationRepository extends JpaRepository<SingleOperation, Long> {
@@ -22,5 +23,5 @@ public interface SingleOperationRepository extends JpaRepository<SingleOperation
     @Modifying
     @Transactional
     @Query("UPDATE SingleOperation t SET t.completed = NOT t.completed where t.id = ?1")
-    void updateChecked (Long id);
+    void updateChecked (UUID id);
 }
