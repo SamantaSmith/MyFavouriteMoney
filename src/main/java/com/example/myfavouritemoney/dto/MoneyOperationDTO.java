@@ -1,5 +1,8 @@
 package com.example.myfavouritemoney.dto;
 
+import com.example.myfavouritemoney.enums.OperationRegularity;
+
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -10,13 +13,15 @@ public class MoneyOperationDTO {
     private String category;
     private Float money;
     private Boolean completed;
+    private OperationRegularity regularity;
 
-    public MoneyOperationDTO(UUID id, Date date, String category, Float money, Boolean completed) {
+    public MoneyOperationDTO(UUID id, Date date, String category, Float money, Boolean completed, OperationRegularity regularity) {
         this.id = id;
         this.date = date;
         this.category = category;
         this.money = money;
         this.completed = completed;
+        this.regularity = regularity;
     }
 
     public UUID getId() {
@@ -31,8 +36,9 @@ public class MoneyOperationDTO {
         return category;
     }
 
-    public Float getMoney() {
-        return money;
+    public String getMoney() {
+        DecimalFormat df = new DecimalFormat("0.00");
+        return df.format(money)+" ₽";
     }
 
     public Boolean getCompletedBoolean() {
@@ -41,5 +47,9 @@ public class MoneyOperationDTO {
 
     public String getCompleted() {
         return completed ? "checked" : "";
+    }
+
+    public OperationRegularity getRegularity() {
+        return regularity;
     }
 }

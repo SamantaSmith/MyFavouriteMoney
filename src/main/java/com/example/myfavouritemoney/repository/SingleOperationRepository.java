@@ -1,6 +1,7 @@
 package com.example.myfavouritemoney.repository;
 
 import com.example.myfavouritemoney.entities.SingleOperation;
+import com.example.myfavouritemoney.enums.OperationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,9 +17,9 @@ public interface SingleOperationRepository extends JpaRepository<SingleOperation
     @Query("SELECT so FROM SingleOperation so\n" +
             "    inner join MoneyOperation m on so.baseOperationId=m.id\n" +
             "    where m.actual=true\n" +
-            "    and m.operationType='EXPENSE'\n" +
+            "    and m.operationType=?3\n" +
             "    and to_char(so.date, 'YYYY-MM') = CONCAT(?1, '-', ?2)")
-    List<SingleOperation> findExpenses(String year, String month);
+    List<SingleOperation> findSingleExpenses(String year, String month, String operationType);
 
     @Modifying
     @Transactional

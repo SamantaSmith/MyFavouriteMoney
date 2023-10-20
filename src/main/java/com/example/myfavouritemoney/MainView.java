@@ -10,18 +10,13 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.grid.ItemClickEvent;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.provider.SortDirection;
-import com.vaadin.flow.data.provider.SortOrder;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -62,8 +57,8 @@ public class MainView extends VerticalLayout {
         //Расходы за месяц
 
         var h3 = new H3
-                (String.format("Мои расходы за %s: (клик для смены месяца)",
-                        LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))));
+                (String.format("Обязательные платежи на %s",
+                        LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")))+": (клик для смены месяца)");
 
 
         VerticalLayout expensesList = new VerticalLayout();
@@ -86,8 +81,8 @@ public class MainView extends VerticalLayout {
             dialog.setHeaderTitle("Выбор месяца");
 
             Button previousMonthButton = new Button(LocalDateTime.now().minusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
-                h3.setText(String.format("Мои расходы за %s:",
-                        LocalDateTime.now().minusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))));
+                h3.setText(String.format("Обязательные платежи на %s",
+                        LocalDateTime.now().minusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))) + ": (клик для смены месяца)");
                 moneyOperationDTOGrid.removeAllColumns();
                 moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid, -1)).setHeader("Выполнено");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
@@ -97,8 +92,8 @@ public class MainView extends VerticalLayout {
                 dialog.close();
             });
             Button currentMonthButton = new Button(LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
-                h3.setText(String.format("Мои расходы за %s:",
-                        LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))));
+                h3.setText(String.format("Обязательные платежи на %s",
+                        LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))) + ": (клик для смены месяца)");
                 moneyOperationDTOGrid.removeAllColumns();
                 moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid, 0)).setHeader("Выполнено");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
@@ -108,8 +103,8 @@ public class MainView extends VerticalLayout {
                 dialog.close();
             });
             Button upComingMonthButton = new Button(LocalDateTime.now().plusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
-                h3.setText(String.format("Мои расходы за %s:",
-                        LocalDateTime.now().plusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))));
+                h3.setText(String.format("Обязательные платежи на %s",
+                        LocalDateTime.now().plusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))) + ": (клик для смены месяца)");
                 moneyOperationDTOGrid.removeAllColumns();
                 moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid, 1)).setHeader("Выполнено");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
@@ -154,7 +149,7 @@ public class MainView extends VerticalLayout {
                     dialog.setConfirmText("Да");
                     dialog.addConfirmListener(event -> {
 
-                        moneyOperationController.updateChecked(item.getId());
+                        moneyOperationController.updateChecked(item.getId(), item.getRegularity());
 
                         grid.removeAllColumns();
                         grid.addColumn(createEmployeeRenderer(grid, plusMonth)).setHeader("Выполнено");
