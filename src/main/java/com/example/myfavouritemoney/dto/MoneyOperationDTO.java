@@ -1,21 +1,26 @@
 package com.example.myfavouritemoney.dto;
 
 import com.example.myfavouritemoney.enums.OperationRegularity;
+import com.vaadin.flow.component.Component;
 
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.util.AbstractMap;
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class MoneyOperationDTO {
 
     private UUID id;
-    private Date date;
+    private LocalDate date;
     private String category;
     private Float money;
     private Boolean completed;
     private OperationRegularity regularity;
 
-    public MoneyOperationDTO(UUID id, Date date, String category, Float money, Boolean completed, OperationRegularity regularity) {
+    public MoneyOperationDTO(UUID id, LocalDate date, String category, Float money, Boolean completed, OperationRegularity regularity) {
         this.id = id;
         this.date = date;
         this.category = category;
@@ -28,7 +33,7 @@ public class MoneyOperationDTO {
         return id;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
@@ -51,5 +56,19 @@ public class MoneyOperationDTO {
 
     public OperationRegularity getRegularity() {
         return regularity;
+    }
+
+    public String getTranslatedRegularity() {
+        switch (regularity) {
+            case REGULAR -> {
+                return "Регулярный";
+            }
+            case SINGLE -> {
+                return "Одиночный";
+            }
+            default -> {
+              return regularity.name();
+            }
+        }
     }
 }

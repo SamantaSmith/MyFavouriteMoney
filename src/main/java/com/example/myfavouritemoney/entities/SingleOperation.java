@@ -2,6 +2,7 @@ package com.example.myfavouritemoney.entities;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 
@@ -10,7 +11,6 @@ import java.util.UUID;
 public class SingleOperation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @Column(name="base_operation_id")
     private UUID baseOperationId;
@@ -19,7 +19,7 @@ public class SingleOperation {
     @Column(name="amount_of_money")
     private Float amountOfMoney;
     @Column(name="date")
-    private Date date;
+    private LocalDate date;
     @Column(name="completed")
     private Boolean completed;
     @Column(name="category")
@@ -28,7 +28,8 @@ public class SingleOperation {
     public SingleOperation() {
     }
 
-    public SingleOperation(Long walletId, UUID baseOperationId, Float amountOfMoney, Date date, Boolean completed, String category) {
+    public SingleOperation(UUID id, Long walletId, UUID baseOperationId, Float amountOfMoney, LocalDate date, Boolean completed, String category) {
+        this.id = id;
         this.walletId = walletId;
         this.baseOperationId = baseOperationId;
         this.amountOfMoney = amountOfMoney;
@@ -53,7 +54,7 @@ public class SingleOperation {
         return amountOfMoney;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return date;
     }
 

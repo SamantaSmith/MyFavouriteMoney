@@ -2,6 +2,7 @@ package com.example.myfavouritemoney.entities;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ public class RegularOperationUnit {
     @Column(name="real_amount_of_money")
     private Float realAmountOfMoney;
     @Column(name="unit_operation_date")
-    private Date unitOperationDate;
+    private LocalDate unitOperationDate;
     @Column(name="completed")
     private Boolean completed;
     @Column(name="category")
@@ -25,7 +26,7 @@ public class RegularOperationUnit {
     public RegularOperationUnit() {
     }
 
-    public RegularOperationUnit(UUID baseRegularOperationId, Float realAmountOfMoney, Date unitOperationDate, Boolean completed, String category) {
+    public RegularOperationUnit(UUID baseRegularOperationId, Float realAmountOfMoney, LocalDate unitOperationDate, Boolean completed, String category) {
         this.baseRegularOperationId = baseRegularOperationId;
         this.realAmountOfMoney = realAmountOfMoney;
         this.unitOperationDate = unitOperationDate;
@@ -45,7 +46,7 @@ public class RegularOperationUnit {
         return realAmountOfMoney;
     }
 
-    public Date getUnitOperationDate() {
+    public LocalDate getUnitOperationDate() {
         return unitOperationDate;
     }
 

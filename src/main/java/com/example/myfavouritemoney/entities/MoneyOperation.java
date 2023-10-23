@@ -9,7 +9,6 @@ import java.util.UUID;
 public class MoneyOperation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @Column(name="user_id")
     private Long userId;
@@ -17,19 +16,20 @@ public class MoneyOperation {
     private String operationType;
     @Column(name="regularity_type")
     private String regularityType;
-    @Column(name="single_income_id")
-    private Long singleIncomeId;
-    @Column(name="regular_income_id")
-    private Long regularIncomeId;
+    @Column(name="single_operation_id")
+    private UUID singleOperationId;
+    @Column(name="regular_operation_id")
+    private UUID regularOperationId;
     @Column(name="actual")
     private Boolean actual;
 
-    public MoneyOperation(Long userId, String operationType, String regularityType, Long singleIncomeId, Long regularIncomeId, Boolean actual) {
+    public MoneyOperation(UUID id, Long userId, String operationType, String regularityType, UUID singleOperationId, UUID regularOperationId, Boolean actual) {
+        this.id = id;
         this.userId = userId;
         this.operationType = operationType;
         this.regularityType = regularityType;
-        this.singleIncomeId = singleIncomeId;
-        this.regularIncomeId = regularIncomeId;
+        this.singleOperationId = singleOperationId;
+        this.regularOperationId = regularOperationId;
         this.actual = actual;
     }
 
@@ -49,12 +49,12 @@ public class MoneyOperation {
         return regularityType;
     }
 
-    public Long getSingleIncomeId() {
-        return singleIncomeId;
+    public UUID getSingleOperationId() {
+        return singleOperationId;
     }
 
-    public Long getRegularIncomeId() {
-        return regularIncomeId;
+    public UUID getRegularOperationId() {
+        return regularOperationId;
     }
 
     public Boolean getActual() {

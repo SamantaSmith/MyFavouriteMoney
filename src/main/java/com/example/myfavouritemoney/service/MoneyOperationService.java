@@ -1,6 +1,8 @@
 package com.example.myfavouritemoney.service;
 
 import com.example.myfavouritemoney.dto.MoneyOperationDTO;
+import com.example.myfavouritemoney.entities.MoneyOperation;
+import com.example.myfavouritemoney.entities.SingleOperation;
 import com.example.myfavouritemoney.enums.OperationRegularity;
 import com.example.myfavouritemoney.enums.OperationType;
 import com.example.myfavouritemoney.repository.MoneyOperationRepository;
@@ -27,7 +29,10 @@ public class MoneyOperationService {
     @Autowired
     private RegularOperationUnitRepository regularOperationUnitRepository;
 
-
+    public void saveSingle(MoneyOperation base, SingleOperation singleOperation) {
+        repository.save(base);
+        singleOperationRepository.save(singleOperation);
+    }
 
     public List<MoneyOperationDTO> getExpensesByMonth(int year, int month) {
 
