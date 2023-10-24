@@ -23,7 +23,7 @@ public class MoneyOperationController {
     public List<MoneyOperationDTO> getExpenses(int year, int month) {
         return service.getExpensesByMonth(year, month);
     }
-    public void saveSingleExpense(Map<String, Object> map) {
+    public LocalDate saveSingleExpense(Map<String, Object> map) {
         System.out.println(map);
 
         var uuid = UUID.randomUUID();
@@ -50,6 +50,8 @@ public class MoneyOperationController {
         );
 
         service.saveSingle(a, b);
+
+        return (LocalDate) map.get("date");
     }
 
     public void updateChecked(UUID id, OperationRegularity regularity) {

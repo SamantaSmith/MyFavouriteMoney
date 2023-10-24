@@ -4,7 +4,6 @@ import com.example.myfavouritemoney.controller.MoneyOperationController;
 import com.example.myfavouritemoney.controller.WalletController;
 import com.example.myfavouritemoney.dto.MoneyOperationDTO;
 import com.example.myfavouritemoney.dto.WalletDTO;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -35,7 +34,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.format.TextStyle;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,10 +70,7 @@ public class MainView extends VerticalLayout {
         walletsList.add(walletGrid);
 
         //Расходы за месяц
-
-        var h3 = new H3
-                (String.format("Обязательные платежи на %s",
-                        LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")))+": (клик для смены месяца)");
+        var h3 = new SpecialH3(LocalDateTime.now().getMonth());
 
 
         VerticalLayout expensesList = new VerticalLayout();
@@ -91,25 +89,38 @@ public class MainView extends VerticalLayout {
 
         moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getMoney).setHeader(new Button(new Icon(VaadinIcon.PLUS), buttonClickEvent -> {
 
-            Dialog dialog = new Dialog();
-            dialog.setHeaderTitle("Добавить обязательный платеж");
+            Dialog addLayoDialog = new Dialog();
+            addLayoDialog.setHeaderTitle("Добавить обязательный платеж");
             VerticalLayout dialogLayout = createDialogLayout();
-            dialog.add(dialogLayout);
+            addLayoDialog.add(dialogLayout);
             Button saveButton = new Button("Add", e -> {
-                moneyOperationController.saveSingleExpense(dialogLayout.getChildren().map(g -> ((Mappable) g).getDtoParameters()).collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue)));
+                var date = moneyOperationController.saveSingleExpense(dialogLayout.getChildren().map(g -> ((Mappable) g).getDtoParameters()).collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue)));
+
+                var firstDay = LocalDateTime.now().minusMonths(1).withDayOfMonth(1).minusDays(1).toLocalDate();
+                var lastDay = LocalDateTime.now().plusMonths(1).with(TemporalAdjusters.lastDayOfMonth()).plusDays(1).toLocalDate();
+
+                int diffMonth=0;
+
+                if (date.isAfter(firstDay) && date.isBefore(lastDay)) {
+                    h3.setText(date.getMonth());
+                    diffMonth = date.getMonthValue() - LocalDateTime.now().getMonthValue();
+                } else {
+                    h3.setText(LocalDateTime.now().getMonth());
+                }
+
                 moneyOperationDTOGrid.removeAllColumns();
-                moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid, 0)).setHeader("Выполнено");
+                moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid, diffMonth)).setHeader("Выполнено");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getCategory).setHeader("Категория");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getMoney).setHeader("Расход");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getTranslatedRegularity).setHeader("Тип");
-                moneyOperationDTOGrid.setItems(moneyOperationController.getExpenses(LocalDateTime.now().minusMonths(0).getYear(), LocalDateTime.now().minusMonths(0).getMonth().getValue()));
-                dialog.close();
+                moneyOperationDTOGrid.setItems(moneyOperationController.getExpenses(LocalDateTime.now().plusMonths(diffMonth).getYear(), LocalDateTime.now().plusMonths(diffMonth).getMonth().getValue()));
+                addLayoDialog.close();
             });
-            Button cancelButton = new Button("Cancel", e -> dialog.close());
-            dialog.getFooter().add(cancelButton);
-            dialog.getFooter().add(saveButton);
-            dialog.open();
+            Button cancelButton = new Button("Cancel", e -> addLayoDialog.close());
+            addLayoDialog.getFooter().add(cancelButton);
+            addLayoDialog.getFooter().add(saveButton);
+            addLayoDialog.open();
         }));
 
 
@@ -121,20 +132,20 @@ public class MainView extends VerticalLayout {
             dialog.setHeaderTitle("Выбор месяца");
 
             Button previousMonthButton = new Button(LocalDateTime.now().minusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
-                h3.setText(String.format("Обязательные платежи на %s",
-                        LocalDateTime.now().minusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))) + ": (клик для смены месяца)");
+                h3.setText(LocalDateTime.now().minusMonths(1).getMonth());
                 moneyOperationDTOGrid.removeAllColumns();
                 moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid, -1)).setHeader("Выполнено");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getCategory).setHeader("Категория");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getMoney).setHeader("Расход");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getTranslatedRegularity).setHeader("Тип");
+
                 moneyOperationDTOGrid.setItems(moneyOperationController.getExpenses(LocalDateTime.now().minusMonths(1).getYear(), LocalDateTime.now().minusMonths(1).getMonth().getValue()));
+
                 dialog.close();
             });
             Button currentMonthButton = new Button(LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
-                h3.setText(String.format("Обязательные платежи на %s",
-                        LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))) + ": (клик для смены месяца)");
+                h3.setText(LocalDateTime.now().getMonth());
                 moneyOperationDTOGrid.removeAllColumns();
                 moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid, 0)).setHeader("Выполнено");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
@@ -145,8 +156,7 @@ public class MainView extends VerticalLayout {
                 dialog.close();
             });
             Button upComingMonthButton = new Button(LocalDateTime.now().plusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
-                h3.setText(String.format("Обязательные платежи на %s",
-                        LocalDateTime.now().plusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru"))) + ": (клик для смены месяца)");
+                h3.setText(LocalDateTime.now().plusMonths(1).getMonth());
                 moneyOperationDTOGrid.removeAllColumns();
                 moneyOperationDTOGrid.addColumn(createEmployeeRenderer(moneyOperationDTOGrid, 1)).setHeader("Выполнено");
                 moneyOperationDTOGrid.addColumn(MoneyOperationDTO::getDate).setHeader("Дата");
@@ -304,12 +314,22 @@ public class MainView extends VerticalLayout {
         }
     }
 
-    //static class SpecialH3 extends H3 {
-//
-    //    public int compareMonthToCurrent() {
-    //        if (super.getText().contains())
-    //    }
-    //}
+    static class SpecialH3 extends H3 {
+        private Month month;
+        public SpecialH3(Month month) {
+            this.setText(month);
+            this.month = month;
+        }
+
+        public void setText(Month month) {
+            String initText = "Обязательные платежи на ";
+            this.setText(initText + month.getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")) + ": (клик для смены месяца)");
+        }
+
+        public Month getMonth() {
+            return month;
+        }
+    }
 
     static interface Mappable {
         public AbstractMap.SimpleEntry<String, Object> getDtoParameters();
