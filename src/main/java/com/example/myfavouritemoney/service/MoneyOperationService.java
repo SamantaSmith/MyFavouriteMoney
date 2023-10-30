@@ -2,6 +2,8 @@ package com.example.myfavouritemoney.service;
 
 import com.example.myfavouritemoney.dto.MoneyOperationDTO;
 import com.example.myfavouritemoney.entities.MoneyOperation;
+import com.example.myfavouritemoney.entities.RegularOperation;
+import com.example.myfavouritemoney.entities.RegularOperationUnit;
 import com.example.myfavouritemoney.entities.SingleOperation;
 import com.example.myfavouritemoney.enums.OperationRegularity;
 import com.example.myfavouritemoney.enums.OperationType;
@@ -12,6 +14,7 @@ import com.example.myfavouritemoney.repository.SingleOperationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -33,7 +36,17 @@ public class MoneyOperationService {
         repository.save(base);
         singleOperationRepository.save(singleOperation);
     }
-
+    public void saveRegular(MoneyOperation base, RegularOperation regularBase, RegularOperationUnit unit) {
+        repository.save(base);
+        regularOperationRepository.save(regularBase);
+        regularOperationUnitRepository.save(unit);
+    }
+    public void updateSingle(UUID singleUUID, String category, LocalDate date, Float money) {
+        singleOperationRepository.updateSingle(singleUUID, category, date, money);
+    }
+    public void updateRegularUnit(UUID id, LocalDate date, Float money) {
+        regularOperationUnitRepository.updateSingle(id, date, money);
+    }
     public List<MoneyOperationDTO> getExpensesByMonth(int year, int month) {
 
         List<MoneyOperationDTO> response = new ArrayList<>();
@@ -54,12 +67,18 @@ public class MoneyOperationService {
         response.sort(new MoneyOperationDTOExpenseComparator());
         return response;
     }
-
     public void updateChecked (UUID id, OperationRegularity regularity) {
         if (regularity == OperationRegularity.SINGLE) {
             singleOperationRepository.updateChecked(id);
         } else {
             regularOperationUnitRepository.updateChecked(id);
+        }
+    }
+    public void deleteExpense(UUID id, OperationRegularity regularity) {
+        if (regularity == OperationRegularity.SINGLE) {
+            repository.setInactive(singleOperationRepository.findByUUID(id).getBaseOperationId());
+        } else {
+            repository.setInactive(regularOperationUnitRepository.getBaseOperationId(id));
         }
     }
 

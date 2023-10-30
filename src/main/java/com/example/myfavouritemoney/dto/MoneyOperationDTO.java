@@ -1,7 +1,9 @@
 package com.example.myfavouritemoney.dto;
 
+import com.example.myfavouritemoney.controller.MoneyOperationController;
 import com.example.myfavouritemoney.enums.OperationRegularity;
-import com.vaadin.flow.component.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
@@ -19,6 +21,7 @@ public class MoneyOperationDTO {
     private Float money;
     private Boolean completed;
     private OperationRegularity regularity;
+    private MoneyOperationController controller;
 
     public MoneyOperationDTO(UUID id, LocalDate date, String category, Float money, Boolean completed, OperationRegularity regularity) {
         this.id = id;
@@ -39,6 +42,10 @@ public class MoneyOperationDTO {
 
     public String getCategory() {
         return category;
+    }
+
+    public Double getRawMoney() {
+        return money.doubleValue();
     }
 
     public String getMoney() {
@@ -70,5 +77,21 @@ public class MoneyOperationDTO {
               return regularity.name();
             }
         }
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public void setMoney(Double money) {
+        this.money = money.floatValue();
     }
 }

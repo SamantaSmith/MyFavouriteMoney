@@ -8,7 +8,6 @@ import java.util.UUID;
 @Table(name= "regular_operation")
 public class RegularOperation {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @Column(name="base_operation_id")
     private UUID baseOperationId;
@@ -23,7 +22,8 @@ public class RegularOperation {
     public RegularOperation() {
     }
 
-    public RegularOperation(UUID baseOperationId, String periodOfRegularity, int[] dates, Float amountOfMoney, String name) {
+    public RegularOperation(UUID id, UUID baseOperationId, String periodOfRegularity, int[] dates, Float amountOfMoney, String name) {
+        this.id = id;
         this.baseOperationId = baseOperationId;
         this.periodOfRegularity = periodOfRegularity;
         this.dates = dates;

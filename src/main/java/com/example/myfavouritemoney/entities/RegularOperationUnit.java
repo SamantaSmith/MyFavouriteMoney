@@ -26,7 +26,8 @@ public class RegularOperationUnit {
     public RegularOperationUnit() {
     }
 
-    public RegularOperationUnit(UUID baseRegularOperationId, Float realAmountOfMoney, LocalDate unitOperationDate, Boolean completed, String category) {
+    public RegularOperationUnit(UUID id, UUID baseRegularOperationId, Float realAmountOfMoney, LocalDate unitOperationDate, Boolean completed, String category) {
+        this.id = id;
         this.baseRegularOperationId = baseRegularOperationId;
         this.realAmountOfMoney = realAmountOfMoney;
         this.unitOperationDate = unitOperationDate;

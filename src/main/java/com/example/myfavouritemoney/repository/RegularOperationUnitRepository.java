@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,4 +26,15 @@ public interface RegularOperationUnitRepository extends JpaRepository<RegularOpe
     @Transactional
     @Query("UPDATE RegularOperationUnit rou SET rou.completed = NOT rou.completed where rou.id = ?1")
     void updateChecked (UUID id);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE RegularOperationUnit t SET t.unitOperationDate = ?2, t.realAmountOfMoney = ?3 where t.id = ?1")
+    void updateSingle(UUID id, LocalDate date, Float money);
+
+    @Query("select rou.id from MoneyOperation rou\n" +
+            "inner join RegularOperation ro on ro.baseOperationId=rou.id\n" +
+            "inner join RegularOperationUnit mo on mo.baseRegularOperationId=ro.id\n" +
+            "where mo.id=?1")
+    UUID getBaseOperationId(UUID id);
 }
