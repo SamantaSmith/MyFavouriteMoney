@@ -16,13 +16,12 @@ import java.time.Month;
 import java.util.*;
 
 @RestController
-@RequestMapping(path = "moneyOperation")
 public class MoneyOperationController {
 
     @Autowired
     private MoneyOperationService service;
 
-    @GetMapping(path = "/getExpenses")
+
     public List<MoneyOperationDTO> getExpenses(int year, int month) {
         return service.getExpensesByMonth(year, month);
     }

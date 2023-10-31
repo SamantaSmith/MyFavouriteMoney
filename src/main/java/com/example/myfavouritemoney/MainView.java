@@ -1,8 +1,10 @@
 package com.example.myfavouritemoney;
 
 import com.example.myfavouritemoney.controller.MoneyOperationController;
+import com.example.myfavouritemoney.controller.MonitoredCategoryController;
 import com.example.myfavouritemoney.controller.WalletController;
 import com.example.myfavouritemoney.dto.MoneyOperationDTO;
+import com.example.myfavouritemoney.dto.MonitoredCategoryDTO;
 import com.example.myfavouritemoney.dto.WalletDTO;
 import com.example.myfavouritemoney.enums.OperationRegularity;
 import com.vaadin.flow.component.AbstractField;
@@ -52,13 +54,17 @@ public class MainView extends VerticalLayout {
     private WalletController walletController;
     private MoneyOperationController moneyOperationController;
 
+    private MonitoredCategoryController monitoredCategoryController;
+
     @Autowired
-    public MainView( WalletController walletController, MoneyOperationController moneyOperationController) {
+    public MainView( WalletController walletController,
+                     MoneyOperationController moneyOperationController,
+                     MonitoredCategoryController monitoredCategoryController) {
         this.walletController = walletController;
         this.moneyOperationController = moneyOperationController;
+        this.monitoredCategoryController = monitoredCategoryController;
 
         //Мои кошельки
-
         VerticalLayout walletsList = new VerticalLayout();
         walletsList.add(new H3("Мои кошельки:"));
 
@@ -80,9 +86,7 @@ public class MainView extends VerticalLayout {
 
         VerticalLayout expensesList = new VerticalLayout();
         expensesList.add(h3);
-
         SpecialGrid<MoneyOperationDTO> moneyOperationDTOGrid = new SpecialGrid<>(MoneyOperationDTO.class, false);
-
         moneyOperationDTOGrid.initGrid(0, h3);
         moneyOperationDTOGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
@@ -116,14 +120,39 @@ public class MainView extends VerticalLayout {
         });
 
 
+        //Контролируемые категории
+
+        VerticalLayout monitoredCategoriesList = new VerticalLayout();
+        monitoredCategoriesList.add(new H3("Контролируемые категории:"));
+
+        var monitoredCategories = monitoredCategoryController.getCategories(LocalDate.now().getYear(), LocalDate.now().getMonth().getValue());
+
+        Grid<MonitoredCategoryDTO> monitoredCategoriesGrid = new Grid<>(MonitoredCategoryDTO.class, false);
+        monitoredCategoriesGrid.addColumn(MonitoredCategoryDTO::getName).setHeader("Имя");
+        monitoredCategoriesGrid.addColumn(MonitoredCategoryDTO::getCurrentExpense).setHeader("Текущие расходы");
+        monitoredCategoriesGrid.addColumn(MonitoredCategoryDTO::getMonthLimit).setHeader("Лимит на месяц");
+        monitoredCategoriesGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
+        monitoredCategoriesGrid.setItems(monitoredCategories);
+        monitoredCategoriesList.add(monitoredCategoriesGrid);
+
+
+
         //Общее
-        HorizontalLayout horizontalLayout = new HorizontalLayout();
-        horizontalLayout.addAndExpand(walletsList);
-        horizontalLayout.addAndExpand(expensesList);
+        HorizontalLayout mainLayo = new HorizontalLayout();
+
+        VerticalLayout verticalLayout = new VerticalLayout();
+        verticalLayout.addAndExpand(walletsList);
+        verticalLayout.addAndExpand(monitoredCategoriesList);
+
+        VerticalLayout verticalLayout2 = new VerticalLayout();
+        verticalLayout2.addAndExpand(expensesList);
+        mainLayo.addAndExpand(verticalLayout);
+        mainLayo.addAndExpand(verticalLayout2);
 
         add(
                 new H1("My Favourite Money"),
-                horizontalLayout
+                mainLayo
         );
     }
 
@@ -150,8 +179,7 @@ public class MainView extends VerticalLayout {
                     dialog.open();
                 });
     }
-
-    private static VerticalLayout createDialogLayout() {
+    private VerticalLayout createDialogLayout() {
 
         //общие поля
         SpecialTextField category = new SpecialTextField("Категория", "category");
@@ -240,7 +268,7 @@ public class MainView extends VerticalLayout {
 
         return dialogLayout;
     }
-    class SpecialGrid<T extends MoneyOperationDTO> extends Grid<T> {
+    public class SpecialGrid<T extends MoneyOperationDTO> extends Grid<T> {
 
         public SpecialGrid(Class beanType, boolean autoCreateColumns) {
             super(beanType, autoCreateColumns);
@@ -362,8 +390,7 @@ public class MainView extends VerticalLayout {
             this.setItems((Collection<T>) moneyOperationController.getExpenses(LocalDateTime.now().plusMonths(diffMonth).getYear(), LocalDateTime.now().plusMonths(diffMonth).getMonth().getValue()));
         }
     }
-
-    static class SpecialComboBox<T> extends ComboBox<T> implements Mappable {
+    public class SpecialComboBox<T> extends ComboBox<T> implements Mappable {
 
         private String hiddenLabel;
 
@@ -387,7 +414,7 @@ public class MainView extends VerticalLayout {
             return super.getValue();
         }
     }
-    static class SpecialTextField extends TextField implements Mappable {
+    public class SpecialTextField extends TextField implements Mappable {
         private String hiddenLabel;
         public SpecialTextField(String label, String hiddenLabel) {
             super(label);
@@ -399,7 +426,7 @@ public class MainView extends VerticalLayout {
             return new AbstractMap.SimpleEntry<String, Object>(hiddenLabel, super.getValue() != null ? super.getValue() : new Object());
         }
     }
-    static class SpecialSelect<T> extends Select implements Mappable {
+    public class SpecialSelect<T> extends Select implements Mappable {
 
         private String hiddenLabel;
 
@@ -423,7 +450,7 @@ public class MainView extends VerticalLayout {
             return super.setItems(dataProvider);
         }
     }
-    static class SpecialDatePicker extends DatePicker implements Mappable {
+    public class SpecialDatePicker extends DatePicker implements Mappable {
 
         private String hiddenLabel;
 
@@ -437,7 +464,7 @@ public class MainView extends VerticalLayout {
             return new AbstractMap.SimpleEntry<String, Object>(hiddenLabel, super.getValue() != null ? super.getValue() : new Object());
         }
     }
-    static class SpecialNumberField extends NumberField implements Mappable {
+    public class SpecialNumberField extends NumberField implements Mappable {
         private String hiddenLabel;
         public SpecialNumberField(String label, String hiddenLabel) {
             super(label);
@@ -449,7 +476,7 @@ public class MainView extends VerticalLayout {
             return new AbstractMap.SimpleEntry<String, Object>(hiddenLabel, super.getValue() != null ? super.getValue().floatValue() : new Object());
         }
     }
-    static class SpecialH3 extends H3 {
+    public class SpecialH3 extends H3 {
         private Month month;
         public SpecialH3(Month month) {
             this.setText(month);
@@ -465,7 +492,7 @@ public class MainView extends VerticalLayout {
             return month;
         }
     }
-    static interface Mappable {
+    public interface Mappable {
         public AbstractMap.SimpleEntry<String, Object> getDtoParameters();
     }
 }
