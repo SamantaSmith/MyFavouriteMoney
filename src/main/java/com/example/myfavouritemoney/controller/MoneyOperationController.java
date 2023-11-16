@@ -22,10 +22,10 @@ public class MoneyOperationController {
     private MoneyOperationService service;
 
 
-    public List<MoneyOperationDTO> getExpenses(int year, int month) {
-        return service.getExpensesByMonth(year, month);
+    public List<MoneyOperationDTO> getOperations(int year, int month, OperationType operationType) {
+        return service.getOperationsByMonth(year, month, operationType);
     }
-    public LocalDate saveExpense(Map<String, Object> map) {
+    public LocalDate saveExpense(Map<String, Object> map, OperationType operationType) {
         System.out.println(map);
 
         var regularity = map.get("regularity").equals("Одиночный") ? OperationRegularity.SINGLE : OperationRegularity.REGULAR;
@@ -37,7 +37,7 @@ public class MoneyOperationController {
             var moneyOperation = new MoneyOperation(
                     uuid,
                     1L,
-                    OperationType.EXPENSE.name(),
+                    operationType.name(),
                     map.get("regularity").equals("Одиночный") ? OperationRegularity.SINGLE.name() : OperationRegularity.REGULAR.name(),
                     singleUUID,
                     null,
@@ -59,7 +59,7 @@ public class MoneyOperationController {
             var moneyOperation = new MoneyOperation(
                     uuid,
                     1L,
-                    OperationType.EXPENSE.name(),
+                    operationType.name(),
                     map.get("regularity").equals("Одиночный") ? OperationRegularity.SINGLE.name() : OperationRegularity.REGULAR.name(),
                     null,
                     regularUUID,

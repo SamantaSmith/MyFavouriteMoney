@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class MoneyOperationService {
@@ -47,19 +46,19 @@ public class MoneyOperationService {
     public void updateRegularUnit(UUID id, LocalDate date, Float money) {
         regularOperationUnitRepository.updateSingle(id, date, money);
     }
-    public List<MoneyOperationDTO> getExpensesByMonth(int year, int month) {
+    public List<MoneyOperationDTO> getOperationsByMonth(int year, int month, OperationType operationType) {
 
         List<MoneyOperationDTO> response = new ArrayList<>();
         var stringMonth = month >= 10 ? String.valueOf(month) : '0' + String.valueOf(month);
 
         response.addAll(singleOperationRepository
-                .findSingleExpenses(String.valueOf(year), stringMonth, OperationType.EXPENSE.name())
+                .findSingleExpenses(String.valueOf(year), stringMonth, operationType.name())
                 .stream()
                 .map(e -> new MoneyOperationDTO(e.getId(), e.getDate(), e.getCategory(), e.getAmountOfMoney(), e.getCompleted(), OperationRegularity.SINGLE))
                 .toList());
 
         response.addAll(regularOperationUnitRepository
-                .findRegularExpenses(String.valueOf(year), stringMonth, OperationType.EXPENSE.name())
+                .findRegularExpenses(String.valueOf(year), stringMonth, operationType.name())
                 .stream()
                 .map(e -> new MoneyOperationDTO(e.getId(), e.getUnitOperationDate(), e.getCategory(), e.getRealAmountOfMoney(), e.getCompleted(), OperationRegularity.REGULAR))
                 .toList());
@@ -81,6 +80,9 @@ public class MoneyOperationService {
             repository.setInactive(regularOperationUnitRepository.getBaseOperationId(id));
         }
     }
+
+
+
 
     static class MoneyOperationDTOExpenseComparator implements Comparator<MoneyOperationDTO> {
         @Override

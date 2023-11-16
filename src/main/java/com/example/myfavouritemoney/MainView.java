@@ -7,12 +7,13 @@ import com.example.myfavouritemoney.dto.MoneyOperationDTO;
 import com.example.myfavouritemoney.dto.MonitoredCategoryDTO;
 import com.example.myfavouritemoney.dto.WalletDTO;
 import com.example.myfavouritemoney.enums.OperationRegularity;
+import com.example.myfavouritemoney.enums.OperationType;
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -22,10 +23,13 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.html.H6;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.progressbar.ProgressBar;
+import com.vaadin.flow.component.progressbar.ProgressBarVariant;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.select.data.SelectDataView;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -34,6 +38,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +58,6 @@ public class MainView extends VerticalLayout {
 
     private WalletController walletController;
     private MoneyOperationController moneyOperationController;
-
     private MonitoredCategoryController monitoredCategoryController;
 
     @Autowired
@@ -66,7 +70,9 @@ public class MainView extends VerticalLayout {
 
         //Мои кошельки
         VerticalLayout walletsList = new VerticalLayout();
-        walletsList.add(new H3("Мои кошельки:"));
+        H3 walletsH3 = new H3("Мои кошельки:");
+        walletsList.add(walletsH3);
+        walletsH3.getStyle().set("font-size", "16px");
 
         var wallets = walletController.getWallets();
         var sum = (Double) wallets.stream().map(WalletDTO::getMoney).mapToDouble(Float::doubleValue).sum();
@@ -82,60 +88,47 @@ public class MainView extends VerticalLayout {
 
 
         //Расходы за месяц
-        var h3 = new SpecialH3(LocalDateTime.now().getMonth());
-
+        SpecialMoneyOperationDTOGrid<MoneyOperationDTO> moneyOperationExpenseDTOGrid = new SpecialMoneyOperationDTOGrid<>(MoneyOperationDTO.class, false, OperationType.EXPENSE);
+        var expenseH3 = new SpecialH3(LocalDateTime.now().getMonth(), moneyOperationExpenseDTOGrid, "Обязательные платежи на ");
         VerticalLayout expensesList = new VerticalLayout();
-        expensesList.add(h3);
-        SpecialGrid<MoneyOperationDTO> moneyOperationDTOGrid = new SpecialGrid<>(MoneyOperationDTO.class, false);
-        moneyOperationDTOGrid.initGrid(0, h3);
-        moneyOperationDTOGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+        expensesList.add(expenseH3);
+        moneyOperationExpenseDTOGrid.initGrid(0, expenseH3);
 
-
-        expensesList.add(moneyOperationDTOGrid);
-        h3.addClickListener((ComponentEventListener<ClickEvent<H3>>) h3ClickEvent -> {
-
-            Dialog dialog = new Dialog();
-            dialog.setHeaderTitle("Выбор месяца");
-
-            Button previousMonthButton = new Button(LocalDateTime.now().minusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
-                h3.setText(LocalDateTime.now().minusMonths(1).getMonth());
-                moneyOperationDTOGrid.initGrid(-1, h3);
-                dialog.close();
-            });
-            Button currentMonthButton = new Button(LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
-                h3.setText(LocalDateTime.now().getMonth());
-                moneyOperationDTOGrid.initGrid(0, h3);
-                dialog.close();
-            });
-            Button upComingMonthButton = new Button(LocalDateTime.now().plusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
-                h3.setText(LocalDateTime.now().plusMonths(1).getMonth());
-                moneyOperationDTOGrid.initGrid(1, h3);
-                dialog.close();
-            });
-
-            dialog.getFooter().add(previousMonthButton);
-            dialog.getFooter().add(currentMonthButton);
-            dialog.getFooter().add(upComingMonthButton);
-            dialog.open();
-        });
+        expensesList.add(moneyOperationExpenseDTOGrid);
 
 
         //Контролируемые категории
-
+        SpecialMonitoredCategoryDTOGrid<MonitoredCategoryDTO> monitoredCategoriesGrid = new SpecialMonitoredCategoryDTOGrid<>(MonitoredCategoryDTO.class, false);
         VerticalLayout monitoredCategoriesList = new VerticalLayout();
-        monitoredCategoriesList.add(new H3("Контролируемые категории:"));
+        var controlCatH3 = new SpecialH3(LocalDate.now().getMonth(), monitoredCategoriesGrid, "Контролируемые категории на ");
+        monitoredCategoriesList.add(controlCatH3);
+        monitoredCategoriesGrid.initGrid(0, controlCatH3);
 
-        var monitoredCategories = monitoredCategoryController.getCategories(LocalDate.now().getYear(), LocalDate.now().getMonth().getValue());
-
-        Grid<MonitoredCategoryDTO> monitoredCategoriesGrid = new Grid<>(MonitoredCategoryDTO.class, false);
-        monitoredCategoriesGrid.addColumn(MonitoredCategoryDTO::getName).setHeader("Имя");
-        monitoredCategoriesGrid.addColumn(MonitoredCategoryDTO::getCurrentExpense).setHeader("Текущие расходы");
-        monitoredCategoriesGrid.addColumn(MonitoredCategoryDTO::getMonthLimit).setHeader("Лимит на месяц");
-        monitoredCategoriesGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-
-        monitoredCategoriesGrid.setItems(monitoredCategories);
         monitoredCategoriesList.add(monitoredCategoriesGrid);
 
+
+        //Доходы за месяц
+        SpecialMoneyOperationDTOGrid<MoneyOperationDTO> moneyOperationIncomeDTOGrid = new SpecialMoneyOperationDTOGrid<>(MoneyOperationDTO.class, false, OperationType.INCOME);
+        VerticalLayout incomeList = new VerticalLayout();
+        var incomeH3 = new SpecialH3(LocalDateTime.now().getMonth(), moneyOperationIncomeDTOGrid, "Планируемые доходы на ");
+        incomeList.add(incomeH3);
+        moneyOperationIncomeDTOGrid.initGrid(0, incomeH3);
+
+        incomeList.add(moneyOperationIncomeDTOGrid);
+
+
+        //Дашборд
+        VerticalLayout dashboardLayout = new VerticalLayout();
+        var dashH3 = new H3("Дашборд");
+        dashH3.getStyle().set("font-size", "16px");
+        dashboardLayout.add(dashH3);
+        dashboardLayout.setWidth("700px");
+        //dashboardLayout.setHeight("1000px");
+
+        dashboardLayout.add(initFormDashboardCards(dashboardLayout));
+        setDashboardStyle(dashboardLayout.getStyle());
+        dashboardLayout.setMargin(true);
+        dashboardLayout.setPadding(true);
 
 
         //Общее
@@ -147,8 +140,15 @@ public class MainView extends VerticalLayout {
 
         VerticalLayout verticalLayout2 = new VerticalLayout();
         verticalLayout2.addAndExpand(expensesList);
+        verticalLayout2.addAndExpand(incomeList);
+
         mainLayo.addAndExpand(verticalLayout);
         mainLayo.addAndExpand(verticalLayout2);
+        mainLayo.add(dashboardLayout);
+        mainLayo.getStyle().setBackground("SeaShell");
+        mainLayo.setPadding(true);
+        mainLayo.getStyle().setBorder("2px solid black");
+        mainLayo.getStyle().set("border-radius", "10px");
 
         add(
                 new H1("My Favourite Money"),
@@ -156,7 +156,24 @@ public class MainView extends VerticalLayout {
         );
     }
 
-    private Renderer<MoneyOperationDTO> createEmployeeRenderer(SpecialGrid grid, int plusMonth, SpecialH3 h3, Editor editor) {
+    private Collection<com.vaadin.flow.component.Component> initFormDashboardCards(VerticalLayout baseLayo) {
+
+        Collection<com.vaadin.flow.component.Component> collection = new ArrayList<>();
+
+        //Кошельки
+        if (walletController.getWallets().size() == 0) {
+            var layout = new SimpleDashboardCard("Кажется, у вас не заполнен раздел кошельков. Заполните его", baseLayo);
+            collection.add(layout);
+        }
+        if (walletController.getWallets().size() == 0) {
+            var layout = new SimpleDashboardCard("Кажется, у вас не заполнен раздел кошельков. Заполните его", baseLayo);
+            collection.add(layout);
+        }
+
+
+        return collection;
+    }
+    private Renderer<MoneyOperationDTO> createEmployeeRenderer(SpecialMoneyOperationDTOGrid grid, int plusMonth, SpecialH3 h3, Editor editor) {
         return LitRenderer.<MoneyOperationDTO> of(
                         "<vaadin-checkbox @click=\"${handleCheckClick}\" ?checked=\"${item.checked}\"></vaadin-checkbox>")
                 .withProperty("checked", MoneyOperationDTO::getCompleted)
@@ -179,7 +196,7 @@ public class MainView extends VerticalLayout {
                     dialog.open();
                 });
     }
-    private VerticalLayout createDialogLayout() {
+    private VerticalLayout createMoneyOperationDialogLayout() {
 
         //общие поля
         SpecialTextField category = new SpecialTextField("Категория", "category");
@@ -268,15 +285,84 @@ public class MainView extends VerticalLayout {
 
         return dialogLayout;
     }
-    public class SpecialGrid<T extends MoneyOperationDTO> extends Grid<T> {
+    private VerticalLayout createMonitoredCategoryDialogLayout() {
+        SpecialTextField category = new SpecialTextField("Категория", "category");
+        List<Integer> selectableYears = List.of(LocalDate.now().getYear(), LocalDate.now().getYear() + 1);
+        var yearPicker = new SpecialComboBox<>("Год отсчета", selectableYears, "yearPicker");
+        var monthPicker = new SpecialComboBox<>("Месяц отсчета", "monthPicker", Month.values());
+        monthPicker.setItemLabelGenerator(
+                m -> m.getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")));
+        SpecialNumberField money = new SpecialNumberField("Лимит трат на месяц", "limitMoney");
 
-        public SpecialGrid(Class beanType, boolean autoCreateColumns) {
+        yearPicker.addValueChangeListener(new HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<ComboBox<Integer>, Integer>>() {
+            @Override
+            public void valueChanged(AbstractField.ComponentValueChangeEvent<ComboBox<Integer>, Integer> comboBoxIntegerComponentValueChangeEvent) {
+                if (yearPicker.getValue() == LocalDateTime.now().getYear()) {
+                    int curMon = LocalDate.now().getMonthValue();
+                    monthPicker.setItems(Arrays.stream(Month.values()).filter(e -> e.getValue() >= curMon).toList());
+                } else {
+                    monthPicker.setItems(Month.values());
+                }
+            }
+        });
+
+        VerticalLayout dialogLayout = new VerticalLayout(category, yearPicker, monthPicker, money);
+        dialogLayout.setPadding(false);
+        dialogLayout.setSpacing(false);
+        dialogLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
+        dialogLayout.getStyle().set("width", "18rem").set("max-width", "100%");
+
+        return dialogLayout;
+    }
+    public class SimpleDashboardCard extends VerticalLayout {
+        public SimpleDashboardCard(String text, VerticalLayout layout) {
+            super();
+            this.setPadding(true);
+            setDashboardStyle(this.getStyle());
+            var h3 = new H3(text);
+            h3.getStyle().set("font-size", "16px");
+            this.add(h3);
+            var complete = new Checkbox("Выполнено");
+            complete.addValueChangeListener(new HasValue.ValueChangeListener<>() {
+                @Override
+                public void valueChanged(AbstractField.ComponentValueChangeEvent<Checkbox, Boolean> checkboxBooleanComponentValueChangeEvent) {
+                    ConfirmDialog dialog = new ConfirmDialog();
+                    dialog.setHeader("Изменение");
+                    dialog.setHeader("Применить изменения?");
+                    dialog.setCancelable(true);
+                    dialog.setCancelText("Нет");
+                    dialog.setConfirmText("Да");
+                    dialog.addConfirmListener(event -> {
+                        layout.remove(SimpleDashboardCard.this);
+                        dialog.close();
+                    });
+                    dialog.addCancelListener(event -> {
+                        complete.setValue(!complete.getValue());
+                        dialog.close();
+                    });
+                    dialog.open();
+                }
+            });
+            this.add(complete);
+        }
+    }
+    private void setDashboardStyle(Style style) {
+        style.setBackground("BlanchedAlmond");
+        style.setBorder("2px solid black");
+        style.set("border-radius", "10px");
+    }
+    public class SpecialMoneyOperationDTOGrid<T extends MoneyOperationDTO> extends Grid<T> implements InitableGrid {
+        private OperationType operationType;
+
+        public SpecialMoneyOperationDTOGrid(Class beanType, boolean autoCreateColumns, OperationType operationType) {
             super(beanType, autoCreateColumns);
+            this.operationType = operationType;
         }
 
+        @Override
         public void initGrid(int diffMonth, SpecialH3 h3) {
-            this.removeAllColumns();
 
+            this.removeAllColumns();
             Editor<T> editor = this.getEditor();
 
 
@@ -302,11 +388,13 @@ public class MainView extends VerticalLayout {
 
                 Dialog addLayoDialog = new Dialog();
                 addLayoDialog.setHeaderTitle("Добавить обязательный платеж");
-                VerticalLayout dialogLayout = createDialogLayout();
+                VerticalLayout dialogLayout = createMoneyOperationDialogLayout();
                 addLayoDialog.add(dialogLayout);
                 Button saveButton = new Button("Add", e -> {
-                    var date = moneyOperationController.saveExpense(dialogLayout.getChildren().map(g -> ((Mappable) g).getDtoParameters()).collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue)));
-
+                    var date = moneyOperationController.saveExpense(
+                            dialogLayout.getChildren().map(g -> ((Mappable) g).getDtoParameters()).collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue)),
+                            operationType
+                    );
                     var firstDay = LocalDateTime.now().minusMonths(1).withDayOfMonth(1).minusDays(1).toLocalDate();
                     var lastDay = LocalDateTime.now().plusMonths(1).with(TemporalAdjusters.lastDayOfMonth()).plusDays(1).toLocalDate();
 
@@ -387,7 +475,123 @@ public class MainView extends VerticalLayout {
             actions.setPadding(false);
             addEditColumn.setEditorComponent(actions);
 
-            this.setItems((Collection<T>) moneyOperationController.getExpenses(LocalDateTime.now().plusMonths(diffMonth).getYear(), LocalDateTime.now().plusMonths(diffMonth).getMonth().getValue()));
+            this.setItems((Collection<T>) moneyOperationController.getOperations(
+                    LocalDateTime.now().plusMonths(diffMonth).getYear(),
+                    LocalDateTime.now().plusMonths(diffMonth).getMonth().getValue(),
+                    operationType)
+            );
+            this.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+        }
+    }
+    public class SpecialMonitoredCategoryDTOGrid<T extends MonitoredCategoryDTO> extends Grid<T> implements InitableGrid {
+
+        public SpecialMonitoredCategoryDTOGrid(Class beanType, boolean autoCreateColumns) {
+            super(beanType, autoCreateColumns);
+        }
+
+        @Override
+        public void initGrid(int diffMonth, SpecialH3 h3) {
+            this.removeAllColumns();
+            var monitoredCategories = monitoredCategoryController.getCategories(LocalDateTime.now().plusMonths(diffMonth).getYear(), LocalDateTime.now().plusMonths(diffMonth).getMonth().getValue());
+            this.addColumn(MonitoredCategoryDTO::getName).setHeader("Имя");
+            this.addColumn(MonitoredCategoryDTO::getMonthLimitString).setHeader("Лимит на месяц");
+            this.addComponentColumn(t -> {
+                var floatProgress = t.getCurrentExpense()/t.getMonthLimit();
+                var progress = floatProgress < 1 ? t.getCurrentExpense()/t.getMonthLimit() : 1;
+
+                ProgressBar progressBar = new ProgressBar();
+
+                if (floatProgress < 0.5) {
+                    progressBar.addThemeVariants(ProgressBarVariant.LUMO_SUCCESS);
+                } else if (floatProgress > 0.5 && floatProgress < 0.8) {
+                    progressBar.addThemeVariants(ProgressBarVariant.LUMO_CONTRAST);
+                } else {
+                    progressBar.addThemeVariants(ProgressBarVariant.LUMO_ERROR);
+                }
+
+                progressBar.setValue(progress);
+
+                NativeLabel progressBarLabelText = new NativeLabel(String.valueOf(t.getCurrentExpenseString()));
+                progressBarLabelText.setId("label");
+                progressBar.getElement().setAttribute("aria-labelledby", "label");
+                NativeLabel progressBarLabelValue = new NativeLabel(String.format(Locale.US, "%d%%", (int) (floatProgress * 100)));
+                HorizontalLayout hl1 = new HorizontalLayout(progressBarLabelText);
+                HorizontalLayout hl2 = new HorizontalLayout(progressBarLabelValue);
+                HorizontalLayout hl = new HorizontalLayout();
+                hl.addAndExpand(hl1, hl2);
+
+                VerticalLayout vLayo = new VerticalLayout();
+                vLayo.add(hl, progressBar);
+                return vLayo;
+            }).setHeader("Прогресс бар расходов");
+            this.addComponentColumn(p -> {
+                        Button addExpenseButton = new Button("\uD83D\uDCB8 Добавить расход");
+                        Button sendExpense = new Button("➡️");
+                        Button cancelButton = new Button("Cancel");
+
+                        NumberField numberField = new NumberField();
+                        numberField.setWidth("80px");
+                        numberField.setVisible(false);
+                        sendExpense.setVisible(false);
+                        cancelButton.setVisible(false);
+
+                        addExpenseButton.addClickListener(e -> {
+                            addExpenseButton.setVisible(false);
+                            numberField.setVisible(true);
+                            sendExpense.setVisible(true);
+                            cancelButton.setVisible(true);
+                        });
+
+                        cancelButton.addClickListener(e -> {
+                            addExpenseButton.setVisible(true);
+                            numberField.setVisible(false);
+                            sendExpense.setVisible(false);
+                            cancelButton.setVisible(false);
+                        });
+
+                        sendExpense.addClickListener(e -> {
+                            monitoredCategoryController.addExpense(p.getId(), numberField.getValue().floatValue());
+                            this.initGrid(diffMonth, h3);
+                            addExpenseButton.setVisible(true);
+                            numberField.setVisible(false);
+                            sendExpense.setVisible(false);
+                            cancelButton.setVisible(false);
+                        });
+
+                        HorizontalLayout layout = new HorizontalLayout();
+                        layout.add(addExpenseButton, numberField, sendExpense, cancelButton);
+                        return layout;
+                    })
+                    .setHeader(new Button("➕ Добавить категорию", buttonClickEvent ->
+                    {
+                        Dialog addLayoDialog = new Dialog();
+                        addLayoDialog.setHeaderTitle("Добавить контролируемую категорию");
+                        VerticalLayout dialogLayout = createMonitoredCategoryDialogLayout();
+                        addLayoDialog.add(dialogLayout);
+
+                        Button saveButton = new Button("Add", e -> {
+                            var date = monitoredCategoryController.saveCategory(dialogLayout.getChildren().map(g -> ((Mappable) g).getDtoParameters()).collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue)));
+                            var firstDay = LocalDateTime.now().minusMonths(1).withDayOfMonth(1).minusDays(1).toLocalDate();
+                            var lastDay = LocalDateTime.now().plusMonths(1).with(TemporalAdjusters.lastDayOfMonth()).plusDays(1).toLocalDate();
+                            int diffMonthMe=0;
+                            if (date.isAfter(firstDay) && date.isBefore(lastDay)) {
+                                h3.setText(date.getMonth());
+                                diffMonthMe = date.getMonthValue() - LocalDateTime.now().getMonthValue();
+                            } else {
+                                h3.setText(LocalDateTime.now().getMonth());
+                            }
+                            this.initGrid(diffMonthMe, h3);
+                            addLayoDialog.close();
+                        });
+
+                        Button cancelButton = new Button("Cancel", e -> addLayoDialog.close());
+                        addLayoDialog.getFooter().add(cancelButton);
+                        addLayoDialog.getFooter().add(saveButton);
+                        addLayoDialog.open();
+                    }));
+
+            this.setItems((Collection<T>) monitoredCategories);
+            this.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         }
     }
     public class SpecialComboBox<T> extends ComboBox<T> implements Mappable {
@@ -478,21 +682,52 @@ public class MainView extends VerticalLayout {
     }
     public class SpecialH3 extends H3 {
         private Month month;
-        public SpecialH3(Month month) {
-            this.setText(month);
+        private String initText;
+        public SpecialH3(Month month, InitableGrid grid, String initText) {
             this.month = month;
+            this.initText = initText;
+            this.setText(month);
+            this.addClickListener((ComponentEventListener<ClickEvent<H3>>) h3ClickEvent -> {
+
+                Dialog dialog = new Dialog();
+                dialog.setHeaderTitle("Выбор месяца");
+
+                Button previousMonthButton = new Button(LocalDateTime.now().minusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
+                    this.setText(LocalDateTime.now().minusMonths(1).getMonth());
+                    grid.initGrid(-1, this);
+                    dialog.close();
+                });
+                Button currentMonthButton = new Button(LocalDateTime.now().getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
+                    this.setText(LocalDateTime.now().getMonth());
+                    grid.initGrid(0, this);
+                    dialog.close();
+                });
+                Button upComingMonthButton = new Button(LocalDateTime.now().plusMonths(1).getMonth().getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")), e -> {
+                    this.setText(LocalDateTime.now().plusMonths(1).getMonth());
+                    grid.initGrid(1, this);
+                    dialog.close();
+                });
+
+                dialog.getFooter().add(previousMonthButton);
+                dialog.getFooter().add(currentMonthButton);
+                dialog.getFooter().add(upComingMonthButton);
+                dialog.open();
+            });
         }
 
         public void setText(Month month) {
-            String initText = "Обязательные платежи на ";
-            this.setText(initText + month.getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")) + ": (клик для смены месяца)");
+            String initText = this.initText;
+            this.setText(initText + month.getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")) + ": (клик для смены месяца, клик при первом запуске для нормального отображения грида)");
+            this.getStyle().set("font-size", "16px");
         }
-
         public Month getMonth() {
             return month;
         }
     }
     public interface Mappable {
         public AbstractMap.SimpleEntry<String, Object> getDtoParameters();
+    }
+    public interface InitableGrid {
+        public void initGrid(int diffMonth, SpecialH3 h3);
     }
 }
