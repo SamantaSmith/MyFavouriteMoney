@@ -39,8 +39,10 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -53,6 +55,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Route(value = "")
+@PermitAll
+@PreserveOnRefresh
 @Component
 public class MainView extends VerticalLayout {
 
