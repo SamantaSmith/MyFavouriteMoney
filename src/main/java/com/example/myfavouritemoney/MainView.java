@@ -57,14 +57,15 @@ import java.util.stream.Collectors;
 @Route(value = "")
 @PermitAll
 @PreserveOnRefresh
-@Component
 public class MainView extends VerticalLayout {
 
+    @Autowired
     private WalletController walletController;
+    @Autowired
     private MoneyOperationController moneyOperationController;
+    @Autowired
     private MonitoredCategoryController monitoredCategoryController;
 
-    @Autowired
     public MainView( WalletController walletController,
                      MoneyOperationController moneyOperationController,
                      MonitoredCategoryController monitoredCategoryController) {
@@ -74,9 +75,10 @@ public class MainView extends VerticalLayout {
 
         //Мои кошельки
         VerticalLayout walletsList = new VerticalLayout();
-        H3 walletsH3 = new H3("Мои кошельки:");
+        H3 walletsH3 = new H3("Мои кошельки");
         walletsList.add(walletsH3);
-        walletsH3.getStyle().set("font-size", "16px");
+        walletsH3.getStyle().set("margin-bottom", "20px");
+        walletsList.setAlignSelf(Alignment.CENTER, walletsH3);
 
         var wallets = walletController.getWallets();
         var sum = (Double) wallets.stream().map(WalletDTO::getMoney).mapToDouble(Float::doubleValue).sum();
@@ -96,6 +98,8 @@ public class MainView extends VerticalLayout {
         var expenseH3 = new SpecialH3(LocalDateTime.now().getMonth(), moneyOperationExpenseDTOGrid, "Обязательные платежи на ");
         VerticalLayout expensesList = new VerticalLayout();
         expensesList.add(expenseH3);
+        expensesList.setAlignSelf(Alignment.CENTER, expenseH3);
+        expenseH3.getStyle().set("margin-bottom", "20px");
         moneyOperationExpenseDTOGrid.initGrid(0, expenseH3);
 
         expensesList.add(moneyOperationExpenseDTOGrid);
@@ -106,6 +110,8 @@ public class MainView extends VerticalLayout {
         VerticalLayout monitoredCategoriesList = new VerticalLayout();
         var controlCatH3 = new SpecialH3(LocalDate.now().getMonth(), monitoredCategoriesGrid, "Контролируемые категории на ");
         monitoredCategoriesList.add(controlCatH3);
+        monitoredCategoriesList.setAlignSelf(Alignment.CENTER, controlCatH3);
+        controlCatH3.getStyle().set("margin-bottom", "20px");
         monitoredCategoriesGrid.initGrid(0, controlCatH3);
 
         monitoredCategoriesList.add(monitoredCategoriesGrid);
@@ -116,6 +122,8 @@ public class MainView extends VerticalLayout {
         VerticalLayout incomeList = new VerticalLayout();
         var incomeH3 = new SpecialH3(LocalDateTime.now().getMonth(), moneyOperationIncomeDTOGrid, "Планируемые доходы на ");
         incomeList.add(incomeH3);
+        incomeList.setAlignSelf(Alignment.CENTER, incomeH3);
+        incomeH3.getStyle().set("margin-bottom", "20px");
         moneyOperationIncomeDTOGrid.initGrid(0, incomeH3);
 
         incomeList.add(moneyOperationIncomeDTOGrid);
@@ -124,10 +132,11 @@ public class MainView extends VerticalLayout {
         //Дашборд
         VerticalLayout dashboardLayout = new VerticalLayout();
         var dashH3 = new H3("Дашборд");
-        dashH3.getStyle().set("font-size", "16px");
+        dashH3.getStyle().set("font-size", "20px");
         dashboardLayout.add(dashH3);
         dashboardLayout.setWidth("700px");
         //dashboardLayout.setHeight("1000px");
+        dashboardLayout.setAlignSelf(Alignment.CENTER, dashH3);
 
         dashboardLayout.add(initFormDashboardCards(dashboardLayout));
         setDashboardStyle(dashboardLayout.getStyle());
@@ -154,10 +163,16 @@ public class MainView extends VerticalLayout {
         mainLayo.getStyle().setBorder("2px solid black");
         mainLayo.getStyle().set("border-radius", "10px");
 
+        H1 headerH1 = new H1("My Favourite Money");
+        headerH1.getStyle().set("margin-bottom", "40px");
+        headerH1.getStyle().set("margin-top", "40px");
+
         add(
-                new H1("My Favourite Money"),
+                headerH1,
                 mainLayo
         );
+
+        this.setAlignSelf(Alignment.CENTER, headerH1);
     }
 
     private Collection<com.vaadin.flow.component.Component> initFormDashboardCards(VerticalLayout baseLayo) {
@@ -251,7 +266,8 @@ public class MainView extends VerticalLayout {
                 yearPicker.setVisible(false);
                 monthPicker.setVisible(false);
                 standardRegularMoney.setVisible(false);
-            } else {
+            } else
+            {
                 datePicker.setVisible(false);
                 money.setVisible(false);
                 periodOfRegularity.setVisible(true);
@@ -527,9 +543,9 @@ public class MainView extends VerticalLayout {
                 VerticalLayout vLayo = new VerticalLayout();
                 vLayo.add(hl, progressBar);
                 return vLayo;
-            }).setHeader("Прогресс бар расходов");
+            }).setHeader("Прогресс бар расходов").setFlexGrow(2);
             this.addComponentColumn(p -> {
-                        Button addExpenseButton = new Button("\uD83D\uDCB8 Добавить расход");
+                        Button addExpenseButton = new Button("\uD83D\uDCB5");
                         Button sendExpense = new Button("➡️");
                         Button cancelButton = new Button("Cancel");
 
@@ -566,7 +582,7 @@ public class MainView extends VerticalLayout {
                         layout.add(addExpenseButton, numberField, sendExpense, cancelButton);
                         return layout;
                     })
-                    .setHeader(new Button("➕ Добавить категорию", buttonClickEvent ->
+                    .setHeader(new Button("➕", buttonClickEvent ->
                     {
                         Dialog addLayoDialog = new Dialog();
                         addLayoDialog.setHeaderTitle("Добавить контролируемую категорию");
@@ -721,8 +737,8 @@ public class MainView extends VerticalLayout {
 
         public void setText(Month month) {
             String initText = this.initText;
-            this.setText(initText + month.getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")) + ": (клик для смены месяца, клик при первом запуске для нормального отображения грида)");
-            this.getStyle().set("font-size", "16px");
+            this.setText(initText + month.getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")));
+            this.getStyle().set("font-size", "20px");
         }
         public Month getMonth() {
             return month;
