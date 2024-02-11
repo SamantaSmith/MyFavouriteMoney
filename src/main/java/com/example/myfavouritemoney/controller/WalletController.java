@@ -14,13 +14,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(path = "wallet")
 public class WalletController {
 
     @Autowired
     private WalletService service;
 
-    @PostMapping(path = "/add")
+
     public void createWallet(
                              @RequestBody CreateWalletRequestDTO dto
                              //@AuthenticationPrincipal OAuth2User principal
@@ -28,21 +27,25 @@ public class WalletController {
         service.createOrUpdateWallet(map(dto, 1L));
     }
 
-    @DeleteMapping(path = "/delete")
+
     public void deleteWallet(@RequestParam Long walletId) {
         service.deleteWallet(walletId);
     }
 
-    @PutMapping(path = "/update")
+
     public void updateWallet(@RequestBody UpdateWalletRequestDTO dto) {
         service.createOrUpdateWallet(new Wallet(dto.walletId(), dto.name(), 1L, dto.type(), dto.money()));
     }
 
-    @GetMapping(path = "/getByUserId")
+
     public List<WalletDTO> getWallets() {
         return service.getWallets(1L)
                 .stream().map(e -> new WalletDTO(e.getName(), service.getWalletTypeVarchar(e.getType()), e.getMoney()))
                 .collect(Collectors.toList());
+    }
+
+    public Boolean isActualizedWallets() {
+        return service.isActualizedWallets(1L);
     }
 
 

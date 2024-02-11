@@ -80,16 +80,9 @@ public class MainView extends VerticalLayout {
         walletsH3.getStyle().set("margin-bottom", "20px");
         walletsList.setAlignSelf(Alignment.CENTER, walletsH3);
 
-        var wallets = walletController.getWallets();
-        var sum = (Double) wallets.stream().map(WalletDTO::getMoney).mapToDouble(Float::doubleValue).sum();
+
 
         Grid<WalletDTO> walletGrid = new Grid<>(WalletDTO.class, false);
-        walletGrid.addColumn(WalletDTO::getName).setHeader("Имя кошелька");
-        walletGrid.addColumn(WalletDTO::getType).setHeader("Тип");
-        walletGrid.addColumn(WalletDTO::getMoney).setHeader("Сумма").setFooter(sum + "₽");
-        walletGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-
-        walletGrid.setItems(wallets);
         walletsList.add(walletGrid);
 
 
@@ -181,11 +174,12 @@ public class MainView extends VerticalLayout {
 
         //Кошельки
         if (walletController.getWallets().size() == 0) {
-            var layout = new SimpleDashboardCard("Кажется, у вас не заполнен раздел кошельков. Заполните его", baseLayo);
+            var layout = new SimpleDashboardCard("У вас не заполнен раздел кошельков. Заполните его", baseLayo);
             collection.add(layout);
         }
-        if (walletController.getWallets().size() == 0) {
-            var layout = new SimpleDashboardCard("Кажется, у вас не заполнен раздел кошельков. Заполните его", baseLayo);
+
+        if (!walletController.isActualizedWallets()) {
+            var layout = new SimpleDashboardCard("Данные по кошелькам не актуализированы сегодня. Обновите их", baseLayo);
             collection.add(layout);
         }
 
@@ -334,6 +328,11 @@ public class MainView extends VerticalLayout {
 
         return dialogLayout;
     }
+
+    private VerticalLayout createWalletDialogLayout() {
+        List<String> selectableWalletTypes = List.of("Наличные", "")
+    }
+
     public class SimpleDashboardCard extends VerticalLayout {
         public SimpleDashboardCard(String text, VerticalLayout layout) {
             super();
@@ -370,6 +369,67 @@ public class MainView extends VerticalLayout {
         style.setBackground("BlanchedAlmond");
         style.setBorder("2px solid black");
         style.set("border-radius", "10px");
+    }
+    public class SpecialWalletsDTOGrid<T extends WalletDTO> extends Grid<T> implements InitableGrid {
+
+        public SpecialWalletsDTOGrid(Class beanType, boolean autoCreateColumns) {
+            super(beanType, autoCreateColumns);
+        }
+
+        @Override
+        public void initGrid(int diffMonth, SpecialH3 h3) {
+            this.removeAllColumns();
+            Editor<T> editor = this.getEditor();
+
+            var wallets = walletController.getWallets();
+            var sum = (Double) wallets.stream().map(WalletDTO::getMoney).mapToDouble(Float::doubleValue).sum();
+            this.addColumn(WalletDTO::getName).setHeader("Имя кошелька");
+            this.addColumn(WalletDTO::getType).setHeader("Тип");
+            this.addColumn(WalletDTO::getMoney).setHeader("Сумма").setFooter(sum + "₽");
+
+            Grid.Column<WalletDTO> addEditColumn = (Column<WalletDTO>) this.addComponentColumn(wallet -> {
+                Button editButton = new Button("✏️");
+                editButton.addClickListener(e -> {
+                    if (editor.isOpen())
+                        editor.cancel();
+                    this.getEditor().editItem(wallet);
+                });
+                return editButton;
+            }).setHeader(new Button("➕", buttonClickEvent -> {
+
+                Dialog addLayoDialog = new Dialog();
+                addLayoDialog.setHeaderTitle("Добавить новый кошелек");
+                VerticalLayout dialogLayout = createMoneyOperationDialogLayout();
+                addLayoDialog.add(dialogLayout);
+                Button saveButton = new Button("Add", e -> {
+                    var date = moneyOperationController.saveExpense(
+                            dialogLayout.getChildren().map(g -> ((Mappable) g).getDtoParameters()).collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue)),
+                            operationType
+                    );
+                    var firstDay = LocalDateTime.now().minusMonths(1).withDayOfMonth(1).minusDays(1).toLocalDate();
+                    var lastDay = LocalDateTime.now().plusMonths(1).with(TemporalAdjusters.lastDayOfMonth()).plusDays(1).toLocalDate();
+
+                    int diffMonthMe=0;
+
+                    if (date.isAfter(firstDay) && date.isBefore(lastDay)) {
+                        h3.setText(date.getMonth());
+                        diffMonthMe = date.getMonthValue() - LocalDateTime.now().getMonthValue();
+                    } else {
+                        h3.setText(LocalDateTime.now().getMonth());
+                    }
+                    this.initGrid(diffMonthMe, h3);
+                    addLayoDialog.close();
+                });
+                Button cancelButton = new Button("Cancel", e -> addLayoDialog.close());
+                addLayoDialog.getFooter().add(cancelButton);
+                addLayoDialog.getFooter().add(saveButton);
+                addLayoDialog.open();
+            }));
+
+            this.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+            this.setItems((Collection<T>)wallets);
+
+        }
     }
     public class SpecialMoneyOperationDTOGrid<T extends MoneyOperationDTO> extends Grid<T> implements InitableGrid {
         private OperationType operationType;
